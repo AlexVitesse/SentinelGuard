@@ -1,0 +1,7 @@
+{
+  "name": "SeguridadIoT",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

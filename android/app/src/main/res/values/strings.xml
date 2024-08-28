@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SeguridadIoT</string>
+    <string name="title_activity_main">SeguridadIoT</string>
+    <string name="package_name">com.space.SeguridadIoT</string>
+    <string name="custom_url_scheme">com.space.SeguridadIoT</string>
+</resources>

@@ -1,61 +1,99 @@
-<ion-header>
-  <ion-toolbar mode="ios" color="tertiary">
-    <ion-title>
-      SeguridadIoT
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+  <ion-header>
+    <ion-toolbar mode="ios" color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button default-href="#"></ion-back-button>
+      </ion-buttons>
+      <ion-title>
+        Agregar Dispositivo
+      </ion-title>
+      <ion-progress-bar type="indeterminate" *ngIf="devices.length == 0"></ion-progress-bar>
+    </ion-toolbar>
+  </ion-header>
 
-<ion-content>
-  <ion-grid>
-      <ion-row size="auto">
-        <ion-button (click)="listDevices()" mode="ios">refresh</ion-button>
-      </ion-row>
-  </ion-grid>
-  <ion-list>
-    <ion-item-sliding *ngFor="let device of devices">
-        <ion-item>
-            <ion-icon slot="start" 
-                      [name]="device.isConnected ? 'checkmark-outline': 'close'" 
-                      [color]="device.isConnected ? 'success' : 'danger'">
-            </ion-icon>
-            <ion-label>{{ device.device.device.name }}</ion-label>
-            <ion-button slot="end" (click)="connect(device.device.device.deviceId)" id="open-modal">connect</ion-button>
-        </ion-item>
-    </ion-item-sliding>
-  </ion-list>
+  <ion-content class="fondo">
 
-  <ion-modal trigger="open-modal" (willDismiss)="onWillDismiss($event)">
-    <ng-template>
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event, 'listDevices')">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+    
+    <ion-item  *ngIf="!bleConnect">
+      <ion-label class="ion-text-wrap" color="danger">
+        BLUETOOTH DESABILITADO
+      </ion-label>
+    </ion-item>
+    
+    <ion-item  *ngIf="devices.length == 0">
+      <ion-label class="ion-text-wrap">
+        Buscando dispositivos cercanos. Asegurese de que su dispositivo haya ingresado modo emparejamiento.
+      </ion-label>
+    </ion-item>
 
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button (click)="cancel()">Cancel</ion-button>
-          </ion-buttons>
-          <ion-title>Configuracion Inicial</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
+    <div class="elemento-centrado" *ngIf="devices.length == 0">
+      <ion-spinner name="crescent" style="transform: scale(4);"></ion-spinner>
+    </div>
+    
 
-      <ion-content class="ion-padding">
-        <ion-input labelPlacement="stacked" label="SSID" placeholder="Introduce tu SSID de WiFi" [(ngModel)]="wifiSSID">
-          <ion-icon slot="start" name="wifi-outline" aria-hidden="true"></ion-icon>
-        </ion-input>
+    <ion-card-content class="redondeo">
+      <ion-list *ngIf="devices.length > 0">
+        <ion-item-sliding *ngFor="let device of devices">
+            <ion-item lines="none">
+              <ion-thumbnail slot="start">
+                <img alt="esp32_image" src="https://i0.wp.com/espressif.com.mx/wp-content/uploads/2023/12/esp32-c3-header.png?w=268&ssl=1" />
+              </ion-thumbnail>
+                <ion-label>{{ device.device.device.name }}</ion-label>
+                <ion-button [disabled]="isConnecting" slot="end" (click)="connect(device.device.device.deviceId)" id="open-modal">connect</ion-button>
+            </ion-item>
+        </ion-item-sliding>
+      </ion-list>
+    </ion-card-content>
+
+    <ion-modal trigger="open-modal" (willDismiss)="onWillDismiss($event)">
+      <ng-template>
+
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="cancel(currentDeviceId)">Cancel</ion-button>
+            </ion-buttons>
+            <ion-title>Configuracion Inicial</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="confirm()" [strong]="true" *ngIf="wifiSSID && wifiPassword && chatId && location">Confirm</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content class="ion-padding">
+          <ion-input labelPlacement="stacked" placeholder="Introduce tu SSID de WiFi" [(ngModel)]="wifiSSID">
+            <div slot="label"><ion-icon slot="start" name="wifi-outline" aria-hidden="true"></ion-icon> SSID </div>
+            
+          </ion-input>
+          
+          <ion-input labelPlacement="stacked" type="password" label="Password" [(ngModel)]="wifiPassword">
+            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+          </ion-input>
+
+          <ion-item lines="none" style="display: flex; align-items: center;">
+            <ion-input labelPlacement="stacked" placeholder="Introduce CHATID" type="number"[(ngModel)]="chatId" style="flex: 1;">
+              <div slot="label">
+                <ion-icon slot="start" name="navigate-circle-outline" aria-hidden="true"></ion-icon>
+                CHATID
+              </div>
+            </ion-input>
+            <!-- Coloca el icono de ayuda con el enlace fuera del ion-input -->
+            <ion-button fill="clear" href="https://t.me/esp32_space_bot?start=michatid" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+              <ion-icon name="help-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-input labelPlacement="stacked" placeholder="Introduce la ubicación del dispositivo" [(ngModel)]="location">
+            <div slot="label">
+              <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
+              Nombre del dispositivo
+            </div>
+          </ion-input>
+
+        </ion-content>
         
-        <ion-input labelPlacement="stacked" type="password" label="Password" [(ngModel)]="wifiPassword">
-          <ion-input-password-toggle slot="end"></ion-input-password-toggle>
-        </ion-input>
-
-        <ion-input labelPlacement="stacked" label="CHATID" placeholder="Introduce CHATID" [(ngModel)]="chatId">
-          <ion-icon slot="start" name="navigate-circle-outline" aria-hidden="true"></ion-icon>
-        </ion-input>
-        
-      </ion-content>
-      
-    </ng-template>
-  </ion-modal>
-</ion-content>
-
+      </ng-template>
+    </ion-modal>
+  </ion-content>

@@ -1,0 +1,82 @@
+<ion-content class="ion-padding">
+  <form (ngSubmit)="onSubmit(loginForm)" #loginForm="ngForm">
+    <ion-avatar class="logo" (click)="logout()">
+      <img alt="Silhouette of a person's head" src="https://i.ibb.co/pR5fRpP/349cf42f-8ba3-4724-b9f1-a8ad1fe47b72.jpg" />
+    </ion-avatar>
+    <!-- Campo de correo -->
+    <ion-item>
+      <ion-label position="floating">Correo electrónico</ion-label>
+      <ion-input type="email" name="email" [(ngModel)]="email" required></ion-input>
+    </ion-item>
+
+    <!-- Campo de contraseña -->
+    <ion-item>
+      <ion-label position="floating">Contraseña</ion-label>
+      <ion-input type="password" name="password" [(ngModel)]="password" required>
+        <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+      </ion-input>
+    </ion-item>
+
+    <!-- Checkbox para mantener sesión -->
+    <ion-item lines="none">
+      <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe">Mantener la sesión iniciada</ion-checkbox>
+    </ion-item>
+
+    <!-- Botón para iniciar sesión -->
+    <ion-button expand="block" type="submit" class="google-btn" [disabled]="!loginForm.form.valid">
+      Iniciar Sesión
+    </ion-button>
+
+    <!-- Botón para registrarse -->
+    <ion-button expand="block" fill="outline" class="register-btn" id="registro">
+      Registrarse
+    </ion-button>
+
+    <!-- Botón para iniciar sesión con Google -->
+    <ion-button expand="block" fill="outline" class="google-btn" (click)="loginWithGoogle()">
+      <ion-icon name="logo-google" slot="start"></ion-icon>
+      Iniciar con Google
+    </ion-button>
+
+    <!-- Botón para recuperar contraseña -->
+    <ion-button fill="clear" size="small" class="forgot-password" (click)="forgotPassword()">
+      Olvidé mi contraseña
+    </ion-button>
+  </form>
+
+    <ion-modal #modal trigger="registro" [presentingElement]="presentingElement">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Registro</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="modal.dismiss()">Cancelar</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-list>
+            <!-- Campo de registro -->
+            <!-- Campo de correo -->
+            <ion-item>
+              <ion-label position="floating">Correo electrónico</ion-label>
+              <ion-input type="email" name="email" [(ngModel)]="email" required></ion-input>
+            </ion-item>
+
+            <!-- Campo de contraseña -->
+            <ion-item>
+              <ion-label position="floating">Contraseña</ion-label>
+              <ion-input type="password" name="password" [(ngModel)]="password" required>
+                <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+              </ion-input>
+            </ion-item>
+            <!-- Botón para registrarse -->
+            <ion-button expand="block" fill="outline" (click)="register()" [disabled]="!loginForm.form.valid" >
+              Registrarse
+            </ion-button>
+              
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+</ion-content>

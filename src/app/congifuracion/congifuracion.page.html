@@ -1,0 +1,55 @@
+<ion-header [translucent]="true">
+  <ion-toolbar mode="ios" color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button default-href="#"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Configuración de Alarma</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-list-header>Tiemposionic generate service miServicio</ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label position="stacked">Tiempo de Salida (segundos)</ion-label>
+      <ion-range
+        [(ngModel)]="exitTime"
+        min="0"
+        max="180"
+        step="1"
+        snaps="true"
+        pin="true"
+        ticks="true"
+        color="primary"
+      >
+        <ion-label slot="start">0</ion-label>
+        <ion-label slot="end">180</ion-label>
+      </ion-range>
+      <ion-note>Valor actual: {{exitTime}} segundos</ion-note>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Tiempo de Prealarma (segundos)</ion-label>
+      <ion-range
+        [(ngModel)]="prealarmTime"
+        min="10"
+        max="600"
+        step="10"
+        snaps="true"
+        pin="true"
+        ticks="true"
+        color="secondary"
+      >
+        <ion-label slot="start">10</ion-label>
+        <ion-label slot="end">600</ion-label>
+      </ion-range>
+      <ion-note>Valor actual: {{prealarmTime}} segundos</ion-note>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-padding">
+    <ion-button expand="block" (click)="saveConfig()">Guardar Configuración</ion-button>
+  </div>
+
+  <ion-toast></ion-toast>
+</ion-content>

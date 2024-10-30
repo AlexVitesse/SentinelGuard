@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.space.SeguridadIoT',
-  appName: 'SeguridadIoT',
+  appName: 'SENTINEL GUARD',
   webDir: 'www',
 
   plugins: {

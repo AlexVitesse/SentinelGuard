@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup,GoogleAuthProvider, 
   sendPasswordResetEmail, signOut
 } from 'firebase/auth';
+import { getDatabase } from "firebase/database";
 import { environment } from 'src/environments/environment';
 
 
@@ -12,7 +13,9 @@ import { environment } from 'src/environments/environment';
 export class FirestoreService {
   oApp = initializeApp(environment.firestore);
 
-  oAuth = getAuth(this.oApp)
+  odatabase = getDatabase(this.oApp);
+
+  oAuth = getAuth(this.oApp);
   constructor() {}
 
   createUserWithEmailAndPassword(email: string, password: string): Promise<void> {

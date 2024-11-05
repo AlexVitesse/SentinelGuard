@@ -7,6 +7,8 @@ export const environment = {
     storageBucket: "sentinel-c028f.appspot.com",
     messagingSenderId: "471650186618",
     appId: "1:471650186618:web:649a7aa6d9d097ebff12c3",
-    measurementId: "G-0FEBDGF1FJ"
+    measurementId: "G-0FEBDGF1FJ",
+    databaseURL: "https://sentinel-c028f-default-rtdb.firebaseio.com"
+
   }
 };

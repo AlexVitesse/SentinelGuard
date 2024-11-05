@@ -61,17 +61,27 @@
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
-
+        
         <ion-content class="ion-padding">
+<!--ANTESs 
           <ion-input labelPlacement="stacked" placeholder="Introduce tu SSID de WiFi" [(ngModel)]="wifiSSID">
             <div slot="label"><ion-icon slot="start" name="wifi-outline" aria-hidden="true"></ion-icon> SSID </div>
             
           </ion-input>
+-->
+ 
+        <ion-select placeholder="Elige una SSID" [(ngModel)]="wifiSSID">
+          <div slot="label">SSID <ion-text color="danger">(Required)</ion-text></div>
+  
+          <ion-select-option *ngFor="let ssid of SSIDsList" [value]="ssid">
+              {{ ssid }}
+          </ion-select-option>
+      </ion-select>
           
+
           <ion-input labelPlacement="stacked" type="password" label="Password" [(ngModel)]="wifiPassword">
             <ion-input-password-toggle slot="end"></ion-input-password-toggle>
           </ion-input>
-
           <ion-item lines="none" style="display: flex; align-items: center;">
             <ion-input labelPlacement="stacked" placeholder="Introduce CHATID" type="number"[(ngModel)]="chatId" style="flex: 1;">
               <div slot="label">
@@ -81,6 +91,21 @@
             </ion-input>
             <!-- Coloca el icono de ayuda con el enlace fuera del ion-input -->
             <ion-button fill="clear" href="https://t.me/esp32_space_bot?start=michatid" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+              <ion-icon name="help-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+
+          <ion-item lines="none" style="display: flex; align-items: center;">
+            <ion-input labelPlacement="stacked" placeholder="Introduce el CHATID de" type="number"[(ngModel)]="chatIdG" style="flex: 1;">
+              <div slot="label">
+                <ion-icon slot="start" name="navigate-circle-outline" aria-hidden="true"></ion-icon>
+                CHATID GRUPAL
+              </div>
+            </ion-input>
+            
+            <!-- Coloca el icono de ayuda con el enlace fuera del ion-input -->
+            <ion-button fill="clear" href="https://t.me/getidsbot?start" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
               <ion-icon name="help-outline"></ion-icon>
             </ion-button>
           </ion-item>

@@ -4,173 +4,172 @@ import { AlertController, Platform, ToastController, IonModal, LoadingController
 import { OverlayEventDetail } from '@ionic/core/components';
 
 
-
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  @ViewChild(IonModal) modal: IonModal;
-  devices: Array<{ device: ScanResult, isConnected: boolean }> = [];
-  receivedData: string = '';
-  isConnecting: boolean = false;
-  bleConnect: boolean = false;
-  isScanning: boolean = false;
-  wifiSSID: string = '';
-  wifiPassword: string = '';
-  chatId: string = '';
-  location: string = '';
-  currentDeviceId: string | null = null;
-  isBreak: boolean = false;
-  isCorrect: boolean = false;
-  loading: HTMLIonLoadingElement | undefined;
-  isConfirming: boolean = false;
+    @ViewChild(IonModal) modal: IonModal;
+    devices: Array<{ device: ScanResult, isConnected: boolean }> = [];
+    receivedData: string = '';
+    isConnecting: boolean = false;
+    bleConnect: boolean = false;
+    isScanning: boolean = false;
+    wifiSSID: string = '';
+    wifiPassword: string = '';
+    chatId: string = '';
+    chatIdG: string = '';
+    location: string = '';
+    SSIDs: string = '';
+    currentDeviceId: string | null = null;
+    isBreak: boolean = false;
+    isCorrect: boolean = false;
+    SSIDsList = [];  // Definimos la lista para almacenar los SSIDs
+    loading: HTMLIonLoadingElement | undefined;
+    isConfirming: boolean = false;
+  
+    // Definición de constantes para los UUIDs
+    private readonly SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0";
+    private readonly SSID_CHAR_UUID = "87654321-4321-6789-4321-fedcba987654";
+    private readonly PASSWORD_CHAR_UUID = "fedcba98-7654-4321-5678-123456789abc";
+    private readonly CHATID_CHAR_UUID = "abcdef12-1234-5678-4321-fedcba987654";
+    private readonly CHATID_GROUP_CHAR_UUID = "8da38bf8-fa8d-456e-aac9-77d3fc1a345d";
+    private readonly LOCATION_CHAR_UUID =     "12345678-8765-4321-8765-1234567890ab"; // UUID para la Ubicación
+    private readonly STATUS_CHAR_UUID = "abcdef12-3456-7890-abcd-ef1234567890"; // UUID para la característica de estado
+    private readonly LIST_CHAR_UUID = "b2b9ccea-27e3-426e-adca-5ca11863133a";
+    private scanInterval: any; // Variable para almacenar el intervalo de escaneo
+    private bluetoothMonitorInterval: any; // Variable para almacenar el intervalo de monitorización
+  
+    constructor(
+      private alertController: AlertController,
+      private toastController: ToastController,
+      private platform: Platform,
+      private cdr: ChangeDetectorRef,
+      private loadingController: LoadingController, // Agrega el LoadingController
+      private navCtrl: NavController,
+    ) 
+  {
+        this.platform.ready().then(async () => {
+          try {
+            await BleClient.initialize({ androidNeverForLocation: true });
+            console.log('BleClient initialized');
+            this.checkBluetoothEnabled();
+            this.scanInterval = setInterval(() => {
+              if (!this.isScanning && !this.isConnecting) { // Solo escanear si no está escaneando ni conectando
+                this.listDevices();
+              }
+            }, 6000);
+          } catch (error) {
+            console.error('Error initializing BleClient', error);
+          }
+        });
+      }
+    
 
-  // Definición de constantes para los UUIDs
-  private readonly SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0";
-  private readonly SSID_CHAR_UUID = "87654321-4321-6789-4321-fedcba987654";
-  private readonly PASSWORD_CHAR_UUID = "fedcba98-7654-4321-5678-123456789abc";
-  private readonly CHATID_CHAR_UUID = "abcdef12-1234-5678-4321-fedcba987654";
-  private readonly LOCATION_CHAR_UUID =     "12345678-8765-4321-8765-1234567890ab"; // UUID para la Ubicación
-  private readonly STATUS_CHAR_UUID = "abcdef12-3456-7890-abcd-ef1234567890"; // UUID para la característica de estado
-  private scanInterval: any; // Variable para almacenar el intervalo de escaneo
+      habilitar() {
+          BleClient.enable().then(
+            response => {
+              this.presentToast('Bluetooth está encendido');
+              console.log("Bluetooth está encendido");
+              this.bleConnect = true;
+              this.startBluetoothMonitor();
+            },
+            error => {
+              this.presentToast('Error al intentar encender, enciende de manera manual');
+              BleClient.requestEnable();
+              console.log("no se pudo");
+            }
+          );
+        }
+
+        async checkBluetoothEnabled() {
+            try {
+              const isEnabled = await BleClient.isEnabled();
+              if (!isEnabled) {
+                await this.showAlert('Bluetooth está apagado. Por favor, enciéndelo.', 'activar');
+                return false;
+              }
+              this.bleConnect = true;
+              this.startBluetoothMonitor();
+              return true;
+            } catch (error) {
+              console.error('Error al verificar Bluetooth:', error);
+              return false;
+            }
+          }
+
+
+          startBluetoothMonitor() {
+              this.bluetoothMonitorInterval = setInterval(async () => {
+                try {
+                  if(this.isBreak == true){
+                    console.warn("EL MONITOR ESTA ACTIVO PERO EL FRENO SE ACTIVO");
+                    return;
+                  }
+                  console.log("Continua..")
+                  const isEnabled = await BleClient.isEnabled();
+            
+                  if (!isEnabled) {
+                    console.warn('Bluetooth está apagado');
+                    this.bleConnect = false;
+                    this.stopScan();
+                    this.stopBluetoothMonitor();
+            
+                    const userAction = await this.showAlert('Bluetooth está apagado. Por favor, enciéndelo.', 'activar');
+                  } else {
+                    console.log('Bluetooth está encendido');
+                    this.bleConnect = true;
+                    this.isScanning = false;
+                    this.isConnecting = false;
+                  }
+                } catch (error) {
+                  console.error('Error al verificar el estado de Bluetooth:', error);
+                }
+              }, 6000);
+            }
   
-  private bluetoothMonitorInterval: any; // Variable para almacenar el intervalo de monitorización
-
-  constructor(
-    private alertController: AlertController,
-    private toastController: ToastController,
-    private platform: Platform,
-    private cdr: ChangeDetectorRef,
-    private loadingController: LoadingController, // Agrega el LoadingController
-    private navCtrl: NavController,
-    
-  ) {
-    this.platform.ready().then(async () => {
-      try {
-        await BleClient.initialize({ androidNeverForLocation: true });
-        console.log('BleClient initialized');
-        this.checkBluetoothEnabled();
-        this.scanInterval = setInterval(() => {
-          if (!this.isScanning && !this.isConnecting) { // Solo escanear si no está escaneando ni conectando
-            this.listDevices();
-          }
-        }, 6000);
-      } catch (error) {
-        console.error('Error initializing BleClient', error);
-      }
-    });
-  }
-
-  habilitar() {
-    BleClient.enable().then(
-      response => {
-        this.presentToast('Bluetooth está encendido');
-        console.log("Bluetooth está encendido");
-        this.bleConnect = true;
-        this.startBluetoothMonitor();
-      },
-      error => {
-        this.presentToast('Error al intentar encender, enciende de manera manual');
-        BleClient.requestEnable();
-        console.log("no se pudo");
-      }
-    );
-  }
-
-  async checkBluetoothEnabled() {
-    try {
-      const isEnabled = await BleClient.isEnabled();
-      if (!isEnabled) {
-        await this.showAlert('Bluetooth está apagado. Por favor, enciéndelo.', 'activar');
-        return false;
-      }
-      this.bleConnect = true;
-      this.startBluetoothMonitor();
-      return true;
-    } catch (error) {
-      console.error('Error al verificar Bluetooth:', error);
-      return false;
-    }
-  }
-
-
-  startBluetoothMonitor() {
-    this.bluetoothMonitorInterval = setInterval(async () => {
-      try {
-        if(this.isBreak == true){
-          console.warn("EL MONITOR ESTA ACTIVO PERO EL FRENO SE ACTIVO");
-          return;
-        }
-        console.log("Continua..")
-        const isEnabled = await BleClient.isEnabled();
   
-        if (!isEnabled) {
-          console.warn('Bluetooth está apagado');
-          this.bleConnect = false;
-  
-          // Detén el escaneo y la monitorización si Bluetooth está apagado
-          this.stopScan(); // Detiene el escaneo si está activo
-          this.stopBluetoothMonitor(); // Detiene el monitoreo
-  
-          // Muestra una alerta para que el usuario encienda Bluetooth y espera su respuesta
-          const userAction = await this.showAlert('Bluetooth está apagado. Por favor, enciéndelo.', 'activar');
-        } else {
-          // Si Bluetooth está encendido, puedes iniciar o continuar con las tareas dependientes de Bluetooth
-          console.log('Bluetooth está encendido');
-          this.bleConnect = true;
-          this.isScanning = false;
-          this.isConnecting = false;
-        }
-      } catch (error) {
-        console.error('Error al verificar el estado de Bluetooth:', error);
-      }
-    }, 6000); // Revisa cada 5 segundos
-  }
-  
-  
-  stopBluetoothMonitor() {
-    this.isBreak = false;
-    this.isScanning = true;
-    if (this.bluetoothMonitorInterval) {
-      clearInterval(this.bluetoothMonitorInterval);
-      this.bluetoothMonitorInterval = null;
-    }
-  }
+            stopBluetoothMonitor() {
+                this.isBreak = false;
+                this.isScanning = true;
+                if (this.bluetoothMonitorInterval) {
+                  clearInterval(this.bluetoothMonitorInterval);
+                  this.bluetoothMonitorInterval = null;
+                }
+              }
   
 
   
 
-  async connect(deviceId: string) {
-
-    const device = this.devices.find(dev => dev.device.device.deviceId === deviceId);
-    if (device) {
-      device.isConnected = true;
-      this.isConnecting = true;
-      console.log(device);
-
-      // Mostrar el loading al iniciar la conexión
-      this.presentLoading("Conectando...");
-
-      try {
-        await BleClient.connect(deviceId, (deviceId) => this.onDisconnect(deviceId));
-        this.presentToast('Conectado al dispositivo');
-        this.currentDeviceId = deviceId;
-        await this.readCharacteristics();
-        this.subscribeToStatusCharacteristic();
-        // this.modal.present();
-        this.dismissLoading(); // Ocultar el loading una vez completada la conexión
-        this.modal.present(); // Presentar el modal después de ocultar el loading
-        this.stopScan();
-      } catch (error) {
-        console.error('Error al conectar al dispositivo:', error);
-        device.isConnected = false;
-        this.isConnecting = false;
-        this.dismissLoading(); // Asegurarse de ocultar el loading en caso de error
-      }
-    }
-  }
+              async connect(deviceId: string) {
+                  const device = this.devices.find(dev => dev.device.device.deviceId === deviceId);
+                  if (device) {
+                      device.isConnected = true;
+                      this.isConnecting = true;
+                      console.log(device);
+              
+                      // Mostrar el loading al iniciar la conexión
+                      this.presentLoading("Conectando...");
+              
+                      try {
+                          await BleClient.connect(deviceId, (deviceId) => this.onDisconnect(deviceId));
+                          this.stopScan();
+                          this.presentToast('Conectado al dispositivo');
+                          this.currentDeviceId = deviceId;
+                          await this.readCharacteristics();
+                          await this.subscribeToStatusCharacteristic();  // Llamada a la suscripción
+                          this.dismissLoading(); // Ocultar el loading una vez completada la conexión
+                          this.modal.present(); // Presentar el modal después de ocultar el loading
+                      } catch (error) {
+                          console.error('Error al conectar al dispositivo:', error);
+                          device.isConnected = false;
+                          this.isConnecting = false;
+                          this.dismissLoading(); // Asegurarse de ocultar el loading en caso de error
+                      }
+                  }
+              }
+              
 
   // Nueva función para leer las características BLE
   async readCharacteristics() {
@@ -180,13 +179,13 @@ export class HomePage {
       }
       
       try {
-          // Leer SSID
+          /*// Leer SSID
           const ssidData = await BleClient.read(
               this.currentDeviceId,
               this.SERVICE_UUID,
               this.SSID_CHAR_UUID
           );
-          this.wifiSSID = new TextDecoder().decode(ssidData); // Actualiza la variable wifiSSID
+          this.wifiSSID = new TextDecoder().decode(ssidData); // Actualiza la variable wifiSSID*/
 
           // Leer Password
           const passwordData = await BleClient.read(
@@ -204,6 +203,15 @@ export class HomePage {
           );
           this.chatId = new TextDecoder().decode(chatIdData); // Actualiza la variable chatId
 
+          // Leer ChatID
+          const chatIdGData = await BleClient.read(
+                this.currentDeviceId,
+                this.SERVICE_UUID,
+                this.CHATID_GROUP_CHAR_UUID
+            );
+            this.chatIdG = new TextDecoder().decode(chatIdGData); // Actualiza la variable chatId
+          
+
           // Leer location
           const locationData = await BleClient.read(
             this.currentDeviceId,
@@ -211,7 +219,8 @@ export class HomePage {
             this.LOCATION_CHAR_UUID
           );
           this.location = new TextDecoder().decode(locationData); // Actualiza la variable location
-          // Forzar a Angular a actualizar los campos de entrada en la UI
+
+          // Forzar a Angular a actualizar los campos de entrada en la UI
           this.cdr.detectChanges();
           console.log('Valores leídos y actualizados en la UI.');
       } catch (error) {
@@ -230,21 +239,15 @@ export class HomePage {
     this.startBluetoothMonitor();
   }
 */
-  onDisconnect(deviceId: string) {
-      console.log(`device ${deviceId} disconnected`);
-    
-      // Restablecer estados de conexión
-      this.isConnecting = false;
-      this.currentDeviceId = null; // Restablece el ID del dispositivo conectado
-    
-      // Habilita el botón de conexión
-      this.clearInputFields(); // Limpia los campos del formulario
-      this.devices.forEach(device => device.isConnected = false); // Marca todos los dispositivos como desconectados
-      
-      // Reiniciar el escaneo de dispositivos
-      this.startBluetoothMonitor(); // Inicia el monitor de Bluetooth nuevamente
-      this.listDevices(); // Reinicia el listado de dispositivos cercanos
-    }
+onDisconnect(deviceId: string) {
+    console.log(`device ${deviceId} disconnected`);
+    this.isConnecting = false;
+    this.currentDeviceId = null;
+    this.clearInputFields();
+    this.devices.forEach(device => device.isConnected = false);
+    this.startBluetoothMonitor();
+    this.listDevices();
+  }
     
 
   handleRefresh(event: any, action: string) {
@@ -259,12 +262,13 @@ export class HomePage {
   }
 
   clearInputFields() {
-    this.wifiSSID = '';
-    this.wifiPassword = '';
-    this.chatId = '';
-    this.location = '';
-    this.cdr.detectChanges(); // Asegurarse de que Angular actualice la vista
-  }
+      this.wifiSSID = '';
+      this.wifiPassword = '';
+      this.chatId = '';
+      this.chatIdG = '';
+      this.location = '';
+      this.cdr.detectChanges();
+    }
 
   listDevices() {
     const options = {
@@ -326,7 +330,6 @@ export class HomePage {
   confirm() {
     console.log('Confirmado');
     this.isConfirming = true;
-    this.presentToast("Cargando...");
     this.presentLoading("Cargando...");
     this.writeWifiCredentials();
   }
@@ -340,8 +343,8 @@ export class HomePage {
   }
 
   async writeWifiCredentials() {
-    if (!this.wifiSSID || !this.wifiPassword || !this.chatId || !this.location ) {
-      this.presentToast('Por favor, introduce el SSID, la contraseña, el chatID y el nombre');
+    if (!this.wifiSSID || !this.wifiPassword) {
+      this.presentToast('Por favor, introduce el SSID, la contraseña');
       return;
     }
 
@@ -349,10 +352,12 @@ export class HomePage {
       const ssidBytes = this.stringToBytes(this.wifiSSID);
       const passwordBytes = this.stringToBytes(this.wifiPassword);
       const chatIdBytes = this.stringToBytes(this.chatId);
+      const chatIdGBytes = this.stringToBytes(this.chatIdG);
       const locationBytes = this.stringToBytes(this.location);
       const ssidDataView = new DataView(ssidBytes.buffer);
       const passwordDataView = new DataView(passwordBytes.buffer);
       const chatIdDataView = new DataView(chatIdBytes.buffer);
+      const chatIdGDataView = new DataView(chatIdGBytes.buffer);
       const locationDataView = new DataView(locationBytes.buffer);
 
       await BleClient.write(
@@ -376,6 +381,13 @@ export class HomePage {
         chatIdDataView
       );
 
+      await BleClient.write(
+          this.currentDeviceId as string,
+          this.SERVICE_UUID,
+          this.CHATID_GROUP_CHAR_UUID,
+          chatIdGDataView
+        );
+
       await BleClient.write(
         this.currentDeviceId as string,
         this.SERVICE_UUID,
@@ -389,24 +401,28 @@ export class HomePage {
   }
 
   async subscribeToStatusCharacteristic() {
-    if (!this.currentDeviceId) {
-      console.error('No hay dispositivo conectado.');
-      return;
-    }
-
-    try {
-      await BleClient.startNotifications(
-        this.currentDeviceId,
-        this.SERVICE_UUID,
-        this.STATUS_CHAR_UUID,
-        (value) => this.handleStatusNotification(value)
-      );
-
-      console.log('Suscripción a la característica de estado iniciada');
-    } catch (error) {
-      console.error('Error al suscribirse a la característica de estado:', error);
-    }
-  }
+      if (!this.currentDeviceId) {
+          console.error('No hay dispositivo conectado.');
+          return;
+      }
+      try {
+          await BleClient.startNotifications(
+              this.currentDeviceId,
+              this.SERVICE_UUID,
+              this.STATUS_CHAR_UUID,
+              (value) => {
+                  this.handleStatusNotification(value); // Asigna el valor recibido
+                  this.cdr.detectChanges();
+              }
+          );
+          console.log('Suscripción a la característica de estado exitosa.');
+      } catch (error) {
+          console.error('Error al suscribirse a la característica de estado:', error);
+          this.presentToast('Error al suscribirse a la característica de estado.');
+      }
+  }
+  
+  
 
     async presentLoading(message: string) {
       this.loading = await this.loadingController.create({
@@ -433,6 +449,8 @@ export class HomePage {
       this.modal.dismiss(null, 'confirm');
       this.dismissLoading();
       this.clearInputFields();
+      this.stopScan();
+      this.navCtrl.navigateRoot('/divices');
     } else if (status === 'Wi-Fi Connection Failed') {
       this.dismissLoading();
       this.presentToast('SSID o PASSWORD incorrecta.');
@@ -440,6 +458,7 @@ export class HomePage {
       this.dismissLoading();
       //this.presentToast('Estado no reconocido: ' + status);
       console.log('Estado recibido:', status);
+      this.SSIDsList = status.split(',');
     }
     this.isConfirming = false;
   }

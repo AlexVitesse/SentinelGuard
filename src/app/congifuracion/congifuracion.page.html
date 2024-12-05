@@ -1,14 +1,27 @@
 <ion-header [translucent]="true">
   <ion-toolbar mode="ios" color="primary">
     <ion-buttons slot="start">
-      <ion-back-button default-href="#"></ion-back-button>
+      <ion-back-button default-href="/divices"></ion-back-button>
     </ion-buttons>
     <ion-title>Configuración de Alarma</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-list-header>Tiemposionic generate service miServicio</ion-list-header>
+  <ion-list-header mode="ios">Información de la Alarma</ion-list-header>
+  <ion-list mode="ios">
+    <ion-item>
+      <ion-input mode="ios" label="Nombre" label-placement="floating" fill="outline" placeholder="Ingrese nombre" [(ngModel)]="nombre"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="Telegram ID" label-placement="floating" fill="outline" placeholder="Ingrese Telegram ID" [(ngModel)]="telegramId"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="Group ID de Telegram" label-placement="floating" fill="outline" placeholder="Ingrese Group ID" [(ngModel)]="groupId"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-list-header>Tiempos</ion-list-header>
   <ion-list>
     <ion-item>
       <ion-label position="stacked">Tiempo de Salida (segundos)</ion-label>
@@ -47,9 +60,12 @@
     </ion-item>
   </ion-list>
 
-  <div class="ion-padding">
-    <ion-button expand="block" (click)="saveConfig()">Guardar Configuración</ion-button>
-  </div>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="saveConfig()">
+      <ion-icon name="save"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 
   <ion-toast></ion-toast>
 </ion-content>
+

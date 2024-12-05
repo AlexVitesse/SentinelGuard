@@ -1,7 +1,8 @@
 <ion-header>
   <ion-toolbar mode="ios" color="primary">
+    <ion-icon slot="start" name="log-out-outline" (click)="logout()"></ion-icon>
     <ion-title>Seguridad del Hogar</ion-title>
-    <ion-icon slot="end" name="add-circle-sharp"></ion-icon>
+    <ion-icon slot="end" name="add-circle-sharp" (click)="addDevices()"></ion-icon>
   </ion-toolbar>
   
 </ion-header>
@@ -16,7 +17,7 @@
       <ion-item>
         <ion-icon [name]="isArmed ? 'shield' : 'shield-outline'" slot="start" [color]="getSystemStatusColor()"></ion-icon>
         <ion-label>{{ getSystemStatus() }}</ion-label>
-        <ion-toggle [(ngModel)]="isArmed"></ion-toggle>
+        <ion-toggle [(ngModel)]="isArmed" (ionChange)="writeStatus()"></ion-toggle>
         
       </ion-item>
     </ion-card-content>
@@ -47,21 +48,23 @@
       <ion-grid>
         <ion-row>
           <ion-col>
-            <ion-button expand="block">
+            <!-- Botón desabilitado hasta corregir-->
+            <ion-button [disabled]="true" expand="block">
               <ion-icon name="lock-closed" slot="start"></ion-icon>
               Cerrar Todo
             </ion-button>
           </ion-col>
           <ion-col>
-            <ion-button expand="block" fill="outline">
-              <ion-icon name="lock-open" slot="start"></ion-icon>
-              Abrir Todo
+            <ion-button (click)="navConfig()" expand="block" fill="outline">
+              <ion-icon name="settings" slot="start"></ion-icon>
+              Configuraciones
             </ion-button>
           </ion-col>
         </ion-row>
         <ion-row>
           <ion-col>
-            <ion-button expand="block" color="danger">
+            <!-- Botón desabilitado hasta corregir-->
+            <ion-button [disabled]="true" expand="block" color="danger">
               <ion-icon name="warning" slot="start"></ion-icon>
               Activar Alarma
             </ion-button>

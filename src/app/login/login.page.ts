@@ -13,6 +13,10 @@ export class LoginPage implements OnInit {
   password: string = '';
   rememberMe: boolean = false;
   presentingElement = null;
+  // Define customCounterFormatter
+  customCounterFormatter(current: number, max: number): string {
+    return `${current} de ${max} caracteres permitidos`;
+  }
   @ViewChild('modal') modal: IonModal;
 
   constructor(
@@ -25,10 +29,11 @@ export class LoginPage implements OnInit {
 
   ngOnInit() {
     const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    this.firestoreService.handleRedirectResult();
     if (authToken) {
       console.log('Aquí te dirige automáticamente al home');
       //COMENTADO PARA LAS PRUEBAS
-      //this.navCtrl.navigateRoot('/home');
+      this.navCtrl.navigateRoot('/home');
     }
     this.presentingElement = document.querySelector('.ion-page');
   }
@@ -42,6 +47,31 @@ export class LoginPage implements OnInit {
     toast.present();
   }
 
+  async checkDevices(path: string): Promise<void> {
+    const userPath = 'Usuarios/' + path;
+    console.log(userPath);
+  
+    try {
+      const readData = await this.firestoreService.readData(userPath);
+  
+      // Verificar si la propiedad "Dispositivos" existe y si contiene elementos
+      if (readData.Dispositivos && readData.Dispositivos.length > 0) {
+        console.log('Dispositivos encontrados:', readData.Dispositivos);
+        localStorage.setItem('uid', path ); // Guardar UID en localStorage
+        // Redirigir a la página correspondiente si existen dispositivos
+        this.navCtrl.navigateRoot('/divices'); 
+      } else {
+        console.log('No se encontraron dispositivos registrados');
+        localStorage.setItem('uid', path ); // Guardar UID en localStorage
+        // Redirigir a otra página si no existen dispositivos
+        this.navCtrl.navigateRoot('/home');
+      }
+    } catch (error) {
+      console.error('Error reading data:', error);
+    }
+  }
+  
+  
   async onSubmit(loginForm: NgForm) {
     if (!loginForm.valid) {
       return;
@@ -64,8 +94,10 @@ export class LoginPage implements OnInit {
       await this.firestoreService.signInWithEmailAndPassword(this.email, this.password);
 
       const user = this.firestoreService.oAuth.currentUser;
+      const token = await user.getIdToken();
+      const id = await user.uid;
       if (user) {
-        const token = await user.getIdToken();
+        
 
         if (this.rememberMe) {
           localStorage.setItem('authToken', token);
@@ -75,30 +107,61 @@ export class LoginPage implements OnInit {
       }
 
       await loading.dismiss();
-      this.navCtrl.navigateRoot('/home');
+      console.log('Id:', id);
+      this.checkDevices(id);
 
     } catch (err) {
       await loading.dismiss();
       this.showToast('Error al iniciar sesión. Verifica tus credenciales.');
     }
   }
+/*
+    async register() {
+      const loading = await this.loadingCtrl.create({
+        message: 'Creando cuenta...',
+      });
+      await loading.present();
 
-  async register() {
-    const loading = await this.loadingCtrl.create({
-      message: 'Creando cuenta...',
-    });
-    await loading.present();
-
-    try {
-      await this.firestoreService.createUserWithEmailAndPassword(this.email, this.password);
-      this.showToast('Cuenta creada exitosamente. Por favor, inicia sesión.');
-      await loading.dismiss();
-      await this.modal.dismiss();
-    } catch (err) {
-      await loading.dismiss();
-      this.showToast('Error al crear la cuenta.');
-    }
-  }
+      try {
+        await this.firestoreService.createUserWithEmailAndPassword(this.email, this.password);
+        this.showToast('Cuenta creada exitosamente. Por favor, inicia sesión.');
+        await loading.dismiss();
+        await this.modal.dismiss();
+      } catch (err) {
+        await loading.dismiss();
+        this.showToast('Error al crear la cuenta.');
+      }
+    }*/
+      async register() {
+        const loading = await this.loadingCtrl.create({
+          message: 'Creando cuenta...',
+        });
+        await loading.present();
+      
+        try {
+          // Llama al servicio para crear el usuario
+          await this.firestoreService.createUserWithEmailAndPassword(this.email, this.password);
+      
+          // Si tiene éxito, muestra el mensaje y cierra el modal
+          this.showToast('Cuenta creada exitosamente. Por favor, inicia sesión.');
+          await loading.dismiss();
+          await this.modal.dismiss();
+        } catch (error) {
+          await loading.dismiss();
+      
+          // Manejo de errores según el código de error de Firebase
+          if (error.code === 'auth/email-already-in-use') {
+            this.showToast('El correo ya está en uso. Por favor, usa otro correo.');
+          } else if (error.code === 'auth/invalid-email') {
+            this.showToast('El correo electrónico no es válido.');
+          } else if (error.code === 'auth/weak-password') {
+            this.showToast('La contraseña es muy débil. Por favor, usa una más segura.');
+          } else {
+            this.showToast('Error al crear la cuenta. Intenta de nuevo.');
+          }
+        }
+      }
+      
 
   async loginWithGoogle() {
     try {
@@ -108,9 +171,12 @@ export class LoginPage implements OnInit {
       await loading.present();
 
       await this.firestoreService.signInWithGoogle();
+      const user = this.firestoreService.oAuth.currentUser;
+      const id = await user.uid;
 
       await loading.dismiss();
-      this.navCtrl.navigateRoot('/home');
+      console.log('Id:', id);
+      this.checkDevices(id);
 
     } catch (err) {
       this.showToast('Error al iniciar sesión con Google.');
@@ -171,8 +237,7 @@ export class LoginPage implements OnInit {
   }
 
   async logout() {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
+    this.firestoreService.logOut();
     await this.navCtrl.navigateRoot('/login');
     this.showToast('LOGOUT');
   }

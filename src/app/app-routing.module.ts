@@ -16,7 +16,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',  // Cambia 'home' a 'login'
+    redirectTo: 'login',  // Cambia 'home' a 'login'
     pathMatch: 'full'
   },
   {

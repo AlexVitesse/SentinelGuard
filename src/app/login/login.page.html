@@ -1,7 +1,7 @@
 <ion-content class="ion-padding">
   <form (ngSubmit)="onSubmit(loginForm)" #loginForm="ngForm">
     <ion-avatar class="logo" (click)="logout()">
-      <img alt="Silhouette of a person's head" src="https://i.ibb.co/pR5fRpP/349cf42f-8ba3-4724-b9f1-a8ad1fe47b72.jpg" />
+      <img alt="Silhouette of a person's head" src="https://i.ibb.co/Phhb3w2/Dise-o-sin-t-tulo.png" />
     </ion-avatar>
     <!-- Campo de correo -->
     <ion-item>
@@ -32,8 +32,8 @@
       Registrarse
     </ion-button>
 
-    <!-- Botón para iniciar sesión con Google -->
-    <ion-button expand="block" fill="outline" class="google-btn" (click)="loginWithGoogle()">
+    <!-- Botón para iniciar sesión con Google  desabilitado hasta corregir-->
+    <ion-button [disabled]="true" expand="block" fill="outline" class="google-btn" (click)="loginWithGoogle()">
       <ion-icon name="logo-google" slot="start"></ion-icon>
       Iniciar con Google
     </ion-button>
@@ -44,39 +44,74 @@
     </ion-button>
   </form>
 
-    <ion-modal #modal trigger="registro" [presentingElement]="presentingElement">
-      <ng-template>
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Registro</ion-title>
-            <ion-buttons slot="end">
-              <ion-button (click)="modal.dismiss()">Cancelar</ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content>
-          <ion-list>
-            <!-- Campo de registro -->
-            <!-- Campo de correo -->
-            <ion-item>
-              <ion-label position="floating">Correo electrónico</ion-label>
-              <ion-input type="email" name="email" [(ngModel)]="email" required></ion-input>
-            </ion-item>
-
-            <!-- Campo de contraseña -->
-            <ion-item>
-              <ion-label position="floating">Contraseña</ion-label>
-              <ion-input type="password" name="password" [(ngModel)]="password" required>
-                <ion-input-password-toggle slot="end"></ion-input-password-toggle>
-              </ion-input>
-            </ion-item>
-            <!-- Botón para registrarse -->
-            <ion-button expand="block" fill="outline" (click)="register()" [disabled]="!loginForm.form.valid" >
-              Registrarse
-            </ion-button>
-              
-          </ion-list>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
+  <ion-modal #modal trigger="registro" [presentingElement]="presentingElement">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Registro</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="modal.dismiss()">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          <!-- Campo de correo -->
+          <ion-item>
+            <ion-label position="stacked" color="primary">
+              Correo electrónico (Debe ser válido, ejemplo: {{ 'usuario@dominio.com' }})
+            </ion-label>
+            
+            
+            <ion-input 
+              type="email" 
+              name="email" 
+              [(ngModel)]="email" 
+              required 
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              maxlength="50"
+              [counter]="true"
+              [counterFormatter]="customCounterFormatter"
+              #emailInput="ngModel">
+            </ion-input>
+            <ion-note slot="error" *ngIf="emailInput.invalid && emailInput.touched">
+              Por favor, ingresa un correo válido.
+            </ion-note>
+          </ion-item>
+  
+          <!-- Campo de contraseña -->
+          <ion-item>
+            <ion-label position="stacked" color="primary">
+              Contraseña (Mínimo 6 caracteres)
+            </ion-label>
+            <ion-input 
+              type="password" 
+              name="password" 
+              [(ngModel)]="password" 
+              required 
+              minlength="6"
+              maxlength="20"
+              [counter]="true"
+              [counterFormatter]="customCounterFormatter"
+              #passwordInput="ngModel">
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+            <ion-note slot="error" *ngIf="passwordInput.invalid && passwordInput.touched">
+              La contraseña debe tener al menos 6 caracteres.
+            </ion-note>
+          </ion-item>
+  
+          <!-- Botón para registrarse -->
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            (click)="register()" 
+            [disabled]="emailInput.invalid || passwordInput.invalid">
+            Registrarse
+          </ion-button>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+  
 </ion-content>

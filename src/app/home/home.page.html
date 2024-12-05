@@ -1,7 +1,7 @@
   <ion-header>
     <ion-toolbar mode="ios" color="primary">
       <ion-buttons slot="start">
-        <ion-back-button default-href="#"></ion-back-button>
+        <ion-back-button default-href="/divices"></ion-back-button>
       </ion-buttons>
       <ion-title>
         Agregar Dispositivo
@@ -68,15 +68,52 @@
             <div slot="label"><ion-icon slot="start" name="wifi-outline" aria-hidden="true"></ion-icon> SSID </div>
             
           </ion-input>
--->
- 
-        <ion-select placeholder="Elige una SSID" [(ngModel)]="wifiSSID">
+
+          <ion-select placeholder="Elige una SSID" [(ngModel)]="wifiSSID">
           <div slot="label">SSID <ion-text color="danger">(Required)</ion-text></div>
   
           <ion-select-option *ngFor="let ssid of SSIDsList" [value]="ssid">
               {{ ssid }}
           </ion-select-option>
-      </ion-select>
+          </ion-select>
+-->
+<ng-container *ngIf="SSIDsList && SSIDsList.length > 0; else manualInput">
+  <!-- Mostrar el ion-select si hay SSIDs disponibles -->
+  <ion-item>
+    <ion-label position="floating">
+      SSID 
+      <ion-text color="danger">(Requerido)</ion-text>
+    </ion-label>
+    <ion-select placeholder="Selecciona una SSID" [(ngModel)]="wifiSSID" (ionChange)="handleSSIDChange($event)">
+      <ion-select-option *ngFor="let ssid of SSIDsList" [value]="ssid">
+        {{ ssid }}
+      </ion-select-option>
+      <!-- Opción adicional para escribir manualmente -->
+      <ion-select-option value="manual">Ingresar manualmente...</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- Mostrar el input si el usuario elige "manual" -->
+  <ion-item *ngIf="isManualInput">
+    <ion-label position="floating">
+      Ingresar SSID 
+      <ion-text color="danger">(Requerido)</ion-text>
+    </ion-label>
+    <ion-input [(ngModel)]="wifiSSID" placeholder="Escribe aquí"></ion-input>
+  </ion-item>
+</ng-container>
+
+<ng-template #manualInput>
+  <!-- Si no hay SSIDs disponibles, mostrar solo el input -->
+  <ion-item>
+    <ion-label position="floating">
+      Ingresar SSID 
+      <ion-text color="danger">(Requerido)</ion-text>
+    </ion-label>
+    <ion-input [(ngModel)]="wifiSSID" placeholder="Escribe aquí"></ion-input>
+  </ion-item>
+</ng-template>
+ 
           
 
           <ion-input labelPlacement="stacked" type="password" label="Password" [(ngModel)]="wifiPassword">
@@ -90,7 +127,7 @@
               </div>
             </ion-input>
             <!-- Coloca el icono de ayuda con el enlace fuera del ion-input -->
-            <ion-button fill="clear" href="https://t.me/esp32_space_bot?start=michatid" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+            <ion-button fill="clear" href="https://t.me/chat_id_echo_bot?start" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
               <ion-icon name="help-outline"></ion-icon>
             </ion-button>
           </ion-item>
@@ -105,7 +142,7 @@
             </ion-input>
             
             <!-- Coloca el icono de ayuda con el enlace fuera del ion-input -->
-            <ion-button fill="clear" href="https://t.me/getidsbot?start" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
+            <ion-button fill="clear" href="https://t.me/chat_id_echo_bot?start" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;">
               <ion-icon name="help-outline"></ion-icon>
             </ion-button>
           </ion-item>

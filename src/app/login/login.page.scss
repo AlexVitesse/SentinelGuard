@@ -1,160 +1,166 @@
-  ion-content {
-    
-      form {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-    
-      .logo {
-        width: 150px;
-        height: 150px;
-        margin: 20px auto;
-      }
-    
-      ion-item {
-        --background: transparent;
-        margin-bottom: 16px;
-      }
-    
-      ion-button {
-        margin-top: 20px;
-      }
-    
-      .register-btn {
-        margin-top: 10px;
-        --background: linear-gradient(to right, #f27121, #e94057);
-        --color: #fff;
-        --border-color: transparent;
-      }
-    
-      .register-btn, .google-btn, .facebook-btn {
-        margin-top: 10px;
-      }
+:root {
+  --ion-padding: 16px;
+  --ion-margin: 16px;
+}
 
-      .google-btn {
-        --background: linear-gradient(to right, #f27121, #e94057);
-        --color: #fff;
-        --border-color: transparent;
-      }
-    
-      .forgot-password {
-        display: block;
-        margin: 20px auto 0;
-        text-align: center;
-      }
-  }
-    
-    /* Responsive styles */
-    @media (max-width: 576px) {
-      ion-content form {
-        padding: 10px;
-      }
-    
-      .logo {
-        width: 80px;
-        height: 80px;
-      }
-    
-      ion-button {
-        font-size: 14px;
-      }
-    }
-    
-    @media (min-width: 577px) and (max-width: 768px) {
-      ion-content form {
-        max-width: 350px;
-      }
-    }
-    
-    @media (min-width: 769px) {
-      ion-content form {
-        max-width: 400px;
-      }
-    }
+/* Estilos generales para el modal */
+ion-modal {
+  --background: rgba(255, 255, 255, 1); /* Fondo blanco */
+  --width: 90%; /* Predeterminado, ajustable */
+  --max-width: 600px; /* Máximo para tablets y desktops */
+  --height: auto;
+  --max-height: 90%;
+  --border-radius: 16px;
+  --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  margin: auto;
+  animation: modalSlideIn 0.3s forwards;
+}
 
-  /* lo nuevo */
+/* Header del modal */
+ion-modal ion-header {
+  --background: var(--ion-color-primary);
+}
 
-  :root {
-    --ion-padding: 16px;
-    --ion-margin: 16px;
-  }
+ion-modal ion-toolbar {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+}
 
-  /* Estilos para el modal */
+ion-modal ion-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Contenido del modal */
+ion-modal ion-content {
+  --padding-top: var(--ion-padding);
+  --padding-bottom: var(--ion-padding);
+  --padding-start: var(--ion-padding);
+  --padding-end: var(--ion-padding);
+}
+
+/* Elementos del formulario dentro del modal */
+ion-modal ion-item {
+  --background: transparent;
+  margin-bottom: var(--ion-margin);
+}
+
+ion-modal ion-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+ion-modal ion-input {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+ion-modal ion-button[expand="block"] {
+  margin-top: var(--ion-margin);
+}
+
+/* Animación para el modal */
+@keyframes modalSlideIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+ion-modal.modal-slide-in {
+  animation: modalSlideIn 0.3s forwards;
+}
+
+/* Estilos responsivos */
+@media (max-width: 576px) { /* Móviles pequeños */
   ion-modal {
-    --background: rgba(0, 0, 0, 0.5);
-    --height: auto;
-    --border-radius: 16px;
-    --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
   }
 
-  /* Estilos para el header del modal */
-  ion-modal ion-header {
-    --background: var(--ion-color-primary);
+  ion-content form {
+    padding: 10px;
   }
 
-  ion-modal ion-toolbar {
-    --background: var(--ion-color-primary);
-    --color: var(--ion-color-primary-contrast);
+  .logo {
+    width: 80px;
+    height: 80px;
   }
 
-  ion-modal ion-title {
-    font-size: 1.2rem;
-    font-weight: bold;
+  ion-button {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) { /* Tablets */
+  ion-modal {
+    --width: 80%;
+    --height: 80%;
   }
 
-  /* Estilos para el contenido del modal */
-  ion-modal ion-content {
-    --padding-top: var(--ion-padding);
-    --padding-bottom: var(--ion-padding);
-    --padding-start: var(--ion-padding);
-    --padding-end: var(--ion-padding);
+  ion-content form {
+    max-width: 350px;
+  }
+}
+
+@media (min-width: 769px) { /* Desktops */
+  ion-modal {
+    --width: 50%;
+    --height: 60%;
+    --max-width: 600px;
   }
 
-  /* Estilos para los ítems de la lista */
-  ion-modal ion-item {
-    --padding-start: 0;
-    --inner-padding-end: 0;
+  ion-content form {
+    max-width: 400px;
+  }
+}
+
+/* Otros estilos generales */
+ion-content {
+  form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .logo {
+    width: 150px;
+    height: 150px;
+    margin: 20px auto;
+  }
+
+  ion-item {
     --background: transparent;
-    margin-bottom: var(--ion-margin);
+    margin-bottom: 16px;
   }
 
-  /* Estilos para las etiquetas */
-  ion-modal ion-label {
-    font-weight: 500;
-    margin-bottom: 8px;
+  ion-button {
+    margin-top: 20px;
   }
 
-  /* Estilos para los inputs */
-  ion-modal ion-input {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --padding-top: 12px;
-    --padding-bottom: 12px;
-    border-radius: 8px;
-    margin-top: 4px;
+  .register-btn {
+    margin-top: 10px;
+    --background: linear-gradient(to right, #f27121, #e94057);
+    --color: #fff;
+    --border-color: transparent;
   }
 
-  /* Estilos para el botón de registro */
-  ion-modal ion-button[expand="block"] {
-    margin-top: var(--ion-margin);
+  .register-btn, .google-btn, .facebook-btn {
+    margin-top: 10px;
   }
 
-  /* Animación para el modal */
-  @keyframes modalSlideIn {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+  .google-btn {
+    --background: linear-gradient(to right, #f27121, #e94057);
+    --color: #fff;
+    --border-color: transparent;
   }
 
-  ion-modal.modal-slide-in {
-    animation: modalSlideIn 0.3s forwards;
+  .forgot-password {
+    display: block;
+    margin: 20px auto 0;
+    text-align: center;
   }
-
-  /* Estilos responsivos */
-  @media (max-width: 576px) {
-    ion-modal {
-      --width: 100%;
-      --height: 100%;
-      --border-radius: 0;
-    }
-  }
+}

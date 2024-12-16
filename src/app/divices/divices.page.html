@@ -15,11 +15,16 @@
     </ion-card-header>
     <ion-card-content>
       <ion-item>
-        <ion-icon [name]="isArmed ? 'shield' : 'shield-outline'" slot="start" [color]="getSystemStatusColor()"></ion-icon>
+        <!--<ion-icon [name]="actualState ? 'shield' : 'shield-outline'" slot="start" [color]="getSystemStatusColor()"></ion-icon>
+        <ion-label>{{ getSystemStatus() }}</ion-label> -->
+        <ion-icon 
+          [name]="actualState ? 'shield' : 'shield-outline'" 
+          slot="start" 
+          [color]="getSystemStatusColor()">
+        </ion-icon>
         <ion-label>{{ getSystemStatus() }}</ion-label>
         <ion-toggle [(ngModel)]="isArmed" (ionChange)="writeStatus()"></ion-toggle>
-        
-      </ion-item>
+      </ion-item>      
     </ion-card-content>
   </ion-card>
 

@@ -22,11 +22,14 @@ export class CongifuracionPage implements OnInit {
 
   ngOnInit() {
     this.mac = localStorage.getItem('mac') || ''; // Carga la MAC desde el almacenamiento local
+    console.log('MAC cargada:', this.mac); // Imprime la MAC en la consola para depuración
     this.loadConfig();
   }
 
   async loadConfig() {
     const path = `ESP32/${this.mac}`; // Ruta en Firebase basada en la MAC
+    console.log('Ruta en Firebase:', path); // Imprime la ruta en la consola para depuración
+
     try {
       // Intenta cargar los datos desde Firebase
       const firebaseData = await this.firestoreService.readData(path);

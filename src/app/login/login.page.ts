@@ -33,7 +33,7 @@ export class LoginPage implements OnInit {
     if (authToken) {
       console.log('Aquí te dirige automáticamente al home');
       //COMENTADO PARA LAS PRUEBAS
-      this.navCtrl.navigateRoot('/home');
+      this.navCtrl.navigateRoot('/divices');
     }
     this.presentingElement = document.querySelector('.ion-page');
   }

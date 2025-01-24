@@ -1,41 +1,44 @@
 <ion-header>
-  <ion-toolbar mode="ios" color="primary">
-    <ion-icon slot="start" name="log-out-outline" (click)="logout()"></ion-icon>
+  <ion-toolbar mode="ios" color="primary" class="toolbar-custom">
+    <ion-icon slot="start" name="log-out-outline" (click)="confirmLogout()"></ion-icon>
     <ion-title>Seguridad del Hogar</ion-title>
     <ion-icon slot="end" name="add-circle-sharp" (click)="addDevices()"></ion-icon>
   </ion-toolbar>
-  
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-card>
+<ion-content class="ion-padding content-custom">
+  <!-- Estado del Sistema -->
+  <ion-card class="custom-card">
     <ion-card-header>
       <ion-card-title>Estado del Sistema</ion-card-title>
       <ion-card-subtitle>Control principal de seguridad</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
       <ion-item>
-        <!--<ion-icon [name]="actualState ? 'shield' : 'shield-outline'" slot="start" [color]="getSystemStatusColor()"></ion-icon>
-        <ion-label>{{ getSystemStatus() }}</ion-label> -->
         <ion-icon 
           [name]="actualState ? 'shield' : 'shield-outline'" 
           slot="start" 
           [color]="getSystemStatusColor()">
         </ion-icon>
         <ion-label>{{ getSystemStatus() }}</ion-label>
-        <ion-toggle [(ngModel)]="isArmed" (ionChange)="writeStatus()"></ion-toggle>
+        <ion-toggle 
+          [(ngModel)]="isArmed" 
+          (ionChange)="handleToggleChange()" 
+          [disabled]="!canWrite">
+        </ion-toggle>
       </ion-item>      
-    </ion-card-content>
+    </ion-card-content>    
   </ion-card>
 
-  <ion-card>
+  <!-- Dispositivos -->
+  <ion-card class="custom-card">
     <ion-card-header>
-      <ion-card-title>Dispositivos </ion-card-title>
-      <ion-card-subtitle>Estado de los sensores y cámaras</ion-card-subtitle>
+      <ion-card-title>Dispositivos</ion-card-title>
+      <ion-card-subtitle>Estado de los sensores y sistemas</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
       <ion-list>
-        <ion-item *ngFor="let device of devices">
+        <ion-item *ngFor="let device of devices" class="custom-item">
           <ion-icon [name]="device.icon" slot="start" color="primary"></ion-icon>
           <ion-label>{{ device.name }}</ion-label>
           <ion-label slot="end" [color]="device.color">{{ device.status }}</ion-label>
@@ -44,7 +47,8 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-card>
+  <!-- Acciones Rápidas -->
+  <ion-card class="custom-card">
     <ion-card-header>
       <ion-card-title>Acciones Rápidas</ion-card-title>
       <ion-card-subtitle>Controles de seguridad</ion-card-subtitle>
@@ -53,14 +57,7 @@
       <ion-grid>
         <ion-row>
           <ion-col>
-            <!-- Botón desabilitado hasta corregir-->
-            <ion-button [disabled]="true" expand="block">
-              <ion-icon name="lock-closed" slot="start"></ion-icon>
-              Cerrar Todo
-            </ion-button>
-          </ion-col>
-          <ion-col>
-            <ion-button (click)="navConfig()" expand="block" fill="outline">
+            <ion-button (click)="navConfig()" expand="block" fill="outline" class="custom-button">
               <ion-icon name="settings" slot="start"></ion-icon>
               Configuraciones
             </ion-button>
@@ -68,13 +65,17 @@
         </ion-row>
         <ion-row>
           <ion-col>
-            <!-- Botón desabilitado hasta corregir-->
-            <ion-button [disabled]="true" expand="block" color="danger">
-              <ion-icon name="warning" slot="start"></ion-icon>
-              Activar Alarma
+            <ion-button
+              class="shiny-cta-button custom-button-danger"
+              [disabled]="!canWrite"
+              expand="block"
+              (click)="handleAlarm()">
+              <ion-icon [name]="alarmActive ? 'checkmark-circle-outline' : 'warning-outline'" slot="start"></ion-icon>
+              {{ alarmActive ? 'Desactivar Alarma' : 'Activar Alarma' }}
             </ion-button>
           </ion-col>
         </ion-row>
+        
       </ion-grid>
     </ion-card-content>
   </ion-card>

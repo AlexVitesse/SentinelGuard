@@ -1,22 +1,82 @@
-ion-card {
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+/* Fondo y colores generales */
+.content-custom {
+  --background: #121212;
+  color: white;
+}
+
+.toolbar-custom {
+  --background: #f34604;
+  --color: #ffffff;
+}
+
+/* Tarjetas */
+.custom-card {
+  background-color: #1e1e1e;
   border-radius: 12px;
-  margin-bottom: 16px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
 }
-ion-button {
-  transition: background-color 0.3s ease;
-}
+
 ion-card-title {
+  color: #f34604;
   font-size: 1.4rem;
-  color: var(--ion-color-primary);
+  font-weight: bold;
 }
+
 ion-card-subtitle {
-  font-size: 1rem;
   color: #888;
 }
-ion-icon {
-  font-size: 1.5rem;
+
+/* Botones */
+.custom-button {
+  --background: #f34604;
+  --border-radius: 16px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
 }
-ion-button {
+
+.custom-button-danger {
+  --background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.custom-button:hover {
+  --background: #feb47b;
+  --box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+}
+
+.custom-item {
+  background-color: #292929;
   border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+/* Animación de pulso para el botón de alerta */
+.alert-button {
+  --background: #e74c3c;
+  --border-radius: 50px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  position: relative;
+  animation: pulse-alert 1.5s infinite;
+}
+
+@keyframes pulse-alert {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(231, 76, 60, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
+  }
 }

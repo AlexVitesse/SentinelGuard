@@ -31,6 +31,7 @@ export class HomePage {
   isConfirming: boolean = false;
   userId: string | null = null;
   isManualInput: boolean = false; // Bandera para mostrar el campo manual
+  isWifiConnect: boolean = false;
   //deviceMAC: string | null = null;
 
   // Definición de constantes para los UUIDs
@@ -41,7 +42,6 @@ export class HomePage {
   private readonly CHATID_GROUP_CHAR_UUID = "8da38bf8-fa8d-456e-aac9-77d3fc1a345d";
   private readonly LOCATION_CHAR_UUID = "12345678-8765-4321-8765-1234567890ab"; // UUID para la Ubicación
   private readonly STATUS_CHAR_UUID = "abcdef12-3456-7890-abcd-ef1234567890"; // UUID para la característica de estado
-  private readonly LIST_CHAR_UUID = "b2b9ccea-27e3-426e-adca-5ca11863133a";
   private scanInterval: any; // Variable para almacenar el intervalo de escaneo
   private bluetoothMonitorInterval: any; // Variable para almacenar el intervalo de monitorización
 
@@ -177,33 +177,33 @@ export class HomePage {
   async connect(deviceId: string) {
     this.stopScan();
     const device = this.devices.find(dev => dev.device.device.deviceId === deviceId);
-    
+
     if (device) {
       device.isConnected = false;
       this.isConnecting = true;
-  
+
       // Mostrar el loading al iniciar la conexión
       await this.presentLoading("Conectando...");
-  
+
       let attempts = 0;
       const maxAttempts = 3;
       let connected = false;
-  
+
       while (attempts < maxAttempts && !connected) {
         attempts++;
         console.log(`Intento ${attempts} de conexión al dispositivo: ${deviceId}`);
-        
+
         try {
           // Intentar conectar
           await BleClient.connect(deviceId, (deviceId) => this.onDisconnect(deviceId));
           connected = true; // Si la conexión es exitosa, marcar como conectado
           device.isConnected = true;
           this.currentDeviceId = deviceId;
-  
+
           // Leer y suscribir características
           await this.readCharacteristics();
           await this.subscribeToStatusCharacteristic();
-  
+
           // Mostrar éxito y salir del ciclo
           this.presentToast('Conectado al dispositivo');
           this.modal.present(); // Mostrar el modal tras la conexión
@@ -211,10 +211,10 @@ export class HomePage {
           console.error(`Error al conectar al dispositivo en el intento ${attempts}:`, error);
         }
       }
-  
+
       // Ocultar el loading después de los intentos (exitosos o no)
       this.dismissLoading();
-  
+
       if (!connected) {
         console.log('No se pudo conectar al dispositivo después de 3 intentos.');
         this.presentToast('Error: No se pudo conectar al dispositivo después de varios intentos.');
@@ -225,7 +225,7 @@ export class HomePage {
     }
   }
 
-  
+
 
   async readCharacteristics() {
     if (!this.currentDeviceId) {
@@ -296,11 +296,11 @@ export class HomePage {
   */
   onDisconnect(deviceId: string) {
     console.log(`device ${deviceId} disconnected`);
-    this.isConnecting = false;
+    //this.isConnecting = false;
     this.currentDeviceId = null;
     this.clearInputFields();
     this.devices.forEach(device => device.isConnected = false);
-    this.startBluetoothMonitor();
+    //this.startBluetoothMonitor();
     this.listDevices();
   }
 
@@ -382,12 +382,79 @@ export class HomePage {
     //this.onDisconnect(deviceId);
   }
 
+  /*//Esta funcion funciona pero se mejoro
   confirm() {
     console.log('Confirmado');
     this.isConfirming = true;
     this.presentLoading("Cargando...");
     this.writeWifiCredentials();
-  }
+  }*/
+  
+  /*
+  async confirm() {
+    console.log('Confirmado');
+    this.isConfirming = true;
+    await this.presentLoading("Cargando...");
+  
+    // Intentar escribir credenciales hasta 2 veces
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      await this.writeWifiCredentials();
+      console.log('Estado de isconfirming: ', this.isConfirming);
+      if (!this.isConfirming) break; // Salir si la conexión fue confirmada
+      const success = await this.waitForConfirmation(15000); // Esperar 10 segundos
+  
+      if (success) {
+        console.log('Conexión confirmada.');
+        return; // Salir si la confirmación fue exitosa
+      } else {
+        console.warn(`Intento ${attempt} fallido.`);
+      }
+    }
+  
+    this.dismissLoading();
+    this.presentToast('No se pudo confirmar la conexión. Inténtalo nuevamente.');
+    this.isConfirming = false;
+  }*/
+  
+    async confirm() {
+      console.log('Confirmado');
+      this.isConfirming = true;
+      await this.presentLoading("Cargando...");
+    
+      // Escribir las credenciales
+      await this.writeWifiCredentials();
+    
+      console.log('Estado inicial de isConfirming: ', this.isConfirming);
+    
+      // Esperar hasta 20 segundos para confirmar la conexión
+      const success = await this.waitForConfirmation(25000); // Espera 20 segundos
+    
+      if (success) {
+        console.log('Conexión confirmada.');
+        return; // Salir si la confirmación fue exitosa
+      }
+    
+      // Si no se confirmó, notificar al usuario
+      console.warn('Conexión no confirmada después de 20 segundos.');
+      this.dismissLoading();
+      this.presentToast('No se pudo confirmar la conexión. Inténtalo nuevamente.');
+      this.isConfirming = false;
+    }
+    
+    async waitForConfirmation(timeout: number): Promise<boolean> {
+      const startTime = Date.now();
+    
+      while (Date.now() - startTime < timeout) {
+        if (!this.isConfirming) {
+          return true; // Confirmación exitosa
+        }
+        await this.sleep(500); // Esperar 500ms antes de verificar nuevamente
+      }
+    
+      return false; // Tiempo agotado
+    }
+    
+
 
 
   onWillDismiss(event: Event) {
@@ -455,42 +522,42 @@ export class HomePage {
     }
   }
 /*
-    async subscribeToStatusCharacteristic() {
-      if (!this.currentDeviceId) {
-        console.error('No hay dispositivo conectado.');
-        return;
+  async writeWifiCredentials() {
+    if (!this.wifiSSID || !this.wifiPassword) {
+      this.presentToast('Por favor, introduce el SSID y la contraseña.');
+      return;
+    }
+  
+    try {
+      // Crear objetos DataView para las credenciales
+      const characteristics = [
+        { uuid: this.SSID_CHAR_UUID, value: this.stringToBytes(this.wifiSSID) },
+        { uuid: this.PASSWORD_CHAR_UUID, value: this.stringToBytes(this.wifiPassword) },
+        { uuid: this.CHATID_CHAR_UUID, value: this.stringToBytes(this.chatId) },
+        { uuid: this.CHATID_GROUP_CHAR_UUID, value: this.stringToBytes(this.chatIdG) },
+        { uuid: this.LOCATION_CHAR_UUID, value: this.stringToBytes(this.location) }
+      ];
+  
+      // Escribir las credenciales mediante una función reutilizable
+      for (const char of characteristics) {
+        await this.writeCharacteristic(this.currentDeviceId, this.SERVICE_UUID, char.uuid, char.value);
       }
-      try {
-        await BleClient.startNotifications(
-          this.currentDeviceId,
-          this.SERVICE_UUID,
-          this.STATUS_CHAR_UUID,
-          (value) => {
-            this.handleStatusNotification(value); // Asigna el valor recibido
-            this.cdr.detectChanges();
-          }
-        );
-        console.log('Suscripción a la característica de estado exitosa.');
-      } catch (error) {
-        console.error('Error al suscribirse a la característica de estado:', error);
-        this.presentToast('Error al suscribirse a la característica de estado.');
-      }
-    }*/
-
-    async subscribeToStatusCharacteristic() {
-      if (!this.currentDeviceId) {
-        console.error('No hay dispositivo conectado.');
-        return;
-      }
-    
-      const maxAttempts = 3;
-      let attempts = 0;
-      let subscribed = false;
-    
-      while (attempts < maxAttempts && !subscribed) {
-        attempts++;
-        console.log(`Intento ${attempts} de suscripción a la característica de estado.`);
-    
+  
+      this.presentToast('Credenciales de WiFi actualizadas correctamente.');
+    } catch (error) {
+      console.error('Error al escribir las credenciales:', error);
+    }
+  }
+  async writeCharacteristic(deviceId: string, serviceUUID: string, charUUID: string, value: ArrayBuffer) {
+    const dataView = new DataView(value);
+    await BleClient.write(deviceId, serviceUUID, charUUID, dataView);
+  }*/
+  /*
+      async subscribeToStatusCharacteristic() {
+        if (!this.currentDeviceId) {
+          console.error('No hay dispositivo conectado.');
+          return;
+        }
         try {
           await BleClient.startNotifications(
             this.currentDeviceId,
@@ -501,29 +568,60 @@ export class HomePage {
               this.cdr.detectChanges();
             }
           );
-          subscribed = true; // Marcar como suscrito si la operación es exitosa
           console.log('Suscripción a la característica de estado exitosa.');
         } catch (error) {
-          console.error(`Error en el intento ${attempts} de suscribirse a la característica de estado:`, error);
-    
-          if (attempts < maxAttempts) {
-            console.log('Esperando antes de reintentar...');
-            await this.pause(1000); // Pausa de 1 segundo antes de intentar nuevamente
-          }
+          console.error('Error al suscribirse a la característica de estado:', error);
+          this.presentToast('Error al suscribirse a la característica de estado.');
         }
-      }
-    
-      if (!subscribed) {
-        console.error('No se pudo suscribir a la característica de estado después de varios intentos.');
-        this.presentToast('Error: No se pudo suscribir a la característica de estado.');
+      }*/
+
+  async subscribeToStatusCharacteristic() {
+    if (!this.currentDeviceId) {
+      console.error('No hay dispositivo conectado.');
+      return;
+    }
+
+    const maxAttempts = 3;
+    let attempts = 0;
+    let subscribed = false;
+
+    while (attempts < maxAttempts && !subscribed) {
+      attempts++;
+      console.log(`Intento ${attempts} de suscripción a la característica de estado.`);
+
+      try {
+        await BleClient.startNotifications(
+          this.currentDeviceId,
+          this.SERVICE_UUID,
+          this.STATUS_CHAR_UUID,
+          (value) => {
+            this.handleStatusNotification(value); // Asigna el valor recibido
+            this.cdr.detectChanges();
+          }
+        );
+        subscribed = true; // Marcar como suscrito si la operación es exitosa
+        console.log('Suscripción a la característica de estado exitosa.');
+      } catch (error) {
+        console.error(`Error en el intento ${attempts} de suscribirse a la característica de estado:`, error);
+
+        if (attempts < maxAttempts) {
+          console.log('Esperando antes de reintentar...');
+          await this.pause(1000); // Pausa de 1 segundo antes de intentar nuevamente
+        }
       }
     }
 
-    pause(ms: number): Promise<void> {
-      return new Promise(resolve => setTimeout(resolve, ms));
+    if (!subscribed) {
+      console.error('No se pudo suscribir a la característica de estado después de varios intentos.');
+      this.presentToast('Error: No se pudo suscribir a la característica de estado.');
     }
-    
-    
+  }
+
+  pause(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+
 
 
   async presentLoading(message: string) {
@@ -541,8 +639,8 @@ export class HomePage {
       this.loading = undefined;
     }
   }
-/*
-  handleStatusNotification(value: DataView) {
+  /*
+  async handleStatusNotification(value: DataView) {
     const status = new TextDecoder().decode(value.buffer);
     console.log('Estado recibido:', status);
 
@@ -550,22 +648,69 @@ export class HomePage {
       this.presentToast('Conectado a Wi-Fi exitosamente.');
       this.modal.dismiss(null, 'confirm');
       this.stopScan();
-      this.creadDevice();
-      this.addDevice();
-      this.sleep(8000); // Pausa de 2 segundos
-      this.clearInputFields();
-      this.dismissLoading();
-      this.navCtrl.navigateRoot('/divices');
+      this.createDevice();
+
+      const deviceAdded = await this.addDevice(); // Esperamos el resultado de la operación
+
+      if (deviceAdded) {
+        this.clearInputFields();
+        this.dismissLoading();
+        this.presentLoading('Espera 30 segundos Alarma reiniciando...'); // Mostrar el mensaje de carga
+        await this.sleep(30000); // Esperar 30 segundos antes de enviar el comando
+        this.dismissLoading();
+        this.navCtrl.navigateRoot('/divices'); // Redirigir si el dispositivo fue agregado
+      } else {
+        this.dismissLoading();
+        this.presentToast('No se pudo agregar el dispositivo. Inténtalo de nuevo.');
+      }
     } else if (status === 'Wi-Fi Connection Failed') {
       this.dismissLoading();
       this.presentToast('SSID o PASSWORD incorrecta.');
     } else {
       this.dismissLoading();
-      //this.presentToast('Estado no reconocido: ' + status);
       console.log('Estado recibido:', status);
       this.SSIDsList = status.split(',');
     }
+
     this.isConfirming = false;
+  }*/
+/*
+  async handleStatusNotification(value: DataView) {
+    const status = new TextDecoder().decode(value.buffer);
+    console.log('Estado recibido:', status);
+  
+    if (status === 'Wi-Fi Connected') {
+      this.presentToast('Conectado a Wi-Fi exitosamente.');
+      this.modal.dismiss(null, 'confirm');
+      this.stopScan();
+      this.createDevice();
+  
+      const deviceAdded = await this.addDevice();
+  
+      if (deviceAdded) {
+        this.clearInputFields();
+        this.dismissLoading();
+        this.isConfirming = false;
+        this.presentLoading('Espera 30 segundos. Alarma reiniciando...');
+        await this.sleep(30000);
+        this.dismissLoading();
+        this.dismissLoading();
+        console.log('Redirigiendo a /divices...');
+        this.navCtrl.navigateRoot('/divices');
+      } else {
+        this.dismissLoading();
+        this.presentToast('No se pudo agregar el dispositivo. Inténtalo de nuevo.');
+      }
+    } else if (status === 'Wi-Fi Connection Failed') {
+      this.dismissLoading();
+      this.presentToast('SSID o PASSWORD incorrecta.');
+    } else {
+      this.dismissLoading();
+      console.log('Estado recibido:', status);
+      this.SSIDsList = status.split(',');
+    }
+  
+    //this.isConfirming = false;
   }*/
     async handleStatusNotification(value: DataView) {
       const status = new TextDecoder().decode(value.buffer);
@@ -573,115 +718,149 @@ export class HomePage {
     
       if (status === 'Wi-Fi Connected') {
         this.presentToast('Conectado a Wi-Fi exitosamente.');
-        this.modal.dismiss(null, 'confirm');
+        //this.modal.dismiss(null, 'confirm');
         this.stopScan();
-        this.creadDevice();
+        this.stopBluetoothMonitor();
+        this.isConnecting = true;
+        this.createDevice();
     
-        const deviceAdded = await this.addDevice(); // Esperamos el resultado de la operación
+        const deviceAdded = await this.addDevice();
     
         if (deviceAdded) {
+          this.dismissLoading();
+          this.isConfirming = false;
+          
+          // Crear y mostrar el loading directamente
+          const loadingElement = document.createElement('ion-loading');
+          loadingElement.message = 'Espera 30 segundos. Alarma reiniciando...';
+          document.body.appendChild(loadingElement);
+          await loadingElement.present(); // Mostrar el loading
+    
+          await this.sleep(30000); // Esperar 30 segundos
+    
+          await loadingElement.dismiss(); // Cerrar el loading
+          document.body.removeChild(loadingElement); // Eliminar el elemento del DOM
+    
+          console.log('Redirigiendo a /divices...');
           this.clearInputFields();
-          this.dismissLoading();
-          this.navCtrl.navigateRoot('/divices'); // Redirigir si el dispositivo fue agregado
+          this.modal.dismiss(null, 'confirm');
+          this.navCtrl.navigateRoot('/divices'); // Navegar después de cerrar el loading
         } else {
-          this.dismissLoading();
           this.presentToast('No se pudo agregar el dispositivo. Inténtalo de nuevo.');
         }
       } else if (status === 'Wi-Fi Connection Failed') {
-        this.dismissLoading();
         this.presentToast('SSID o PASSWORD incorrecta.');
       } else {
-        this.dismissLoading();
         console.log('Estado recibido:', status);
         this.SSIDsList = status.split(',');
       }
-    
-      this.isConfirming = false;
     }
     
+
 
   stringToBytes(str: string): Uint8Array {
     const encoder = new TextEncoder();
     return encoder.encode(str);
   }
-    async addDevice(): Promise<boolean> {
-      const userPath = 'Usuarios/' + this.userId;
-      const userData = {
-        Dispositivos: [this.formatMacAddress(this.currentDeviceId)], // Asocia el dispositivo al usuario
-      };
-    
-      try {
-        // Leer datos del usuario
-        const existingUserData = await this.firestoreService.readData(userPath);
-    
-        const dispositivos = existingUserData?.Dispositivos || [];
-    
-        // Validar si el dispositivo ya existe
-        if (!dispositivos.includes(this.formatMacAddress(this.currentDeviceId))) {
-          dispositivos.push(this.formatMacAddress(this.currentDeviceId));
-          await this.firestoreService.updateData(userPath, { Dispositivos: dispositivos });
-          console.log('Dispositivo agregado al usuario.');
-          return true; // Operación exitosa
-        } else {
-          console.log('El dispositivo ya está asociado al usuario.');
-          return true; // Ya estaba asociado, pero no es un error
-        }
-      } catch (error) {
-        console.error('Error al verificar o agregar el dispositivo:', error);
-        return false;
+  async addDevice(): Promise<boolean> {
+    const userPath = 'Usuarios/' + this.userId;
+    const userData = {
+      Dispositivos: [this.formatMacAddress(this.currentDeviceId)], // Asocia el dispositivo al usuario
+    };
+
+    try {
+      // Leer datos del usuario
+      const existingUserData = await this.firestoreService.readData(userPath);
+
+      const dispositivos = existingUserData?.Dispositivos || [];
+
+      // Validar si el dispositivo ya existe
+      if (!dispositivos.includes(this.formatMacAddress(this.currentDeviceId))) {
+        dispositivos.push(this.formatMacAddress(this.currentDeviceId));
+        await this.firestoreService.updateData(userPath, { Dispositivos: dispositivos });
+        console.log('Dispositivo agregado al usuario.');
+        return true; // Operación exitosa
+      } else {
+        console.log('El dispositivo ya está asociado al usuario.');
+        return true; // Ya estaba asociado, pero no es un error
       }
+    } catch (error) {
+      console.error('Error al verificar o agregar el dispositivo:', error);
+      return false;
     }
-    
-    
-  
-  async creadDevice() {
+  }
+
+  async createDevice() {
     const devicesPath = 'ESP32/' + this.formatMacAddress(this.currentDeviceId);
     console.log(devicesPath);
-  
+
     const deviceWrite = {
-      Answer: false,//FALSO ES = APAGADO Y TRUE IGUAL A ENCENDIDO es el de comando
+      Answer: false, // FALSO ES = APAGADO Y TRUE IGUAL A ENCENDIDO es el de comando
       Estado: false,
       Nombre: this.location,
       Telegram_ID: this.chatId,
       Group_ID: this.chatIdG,
       Tiempo_Bomba: 60,
       Tiempo_pre: 60,
+      DisparoApp:false,
+      DisparoESP:false
     };
-  
+
     try {
+      // Leer datos del dispositivo
       const existingDeviceData = await this.firestoreService.readData(devicesPath);
-  
+
       if (existingDeviceData) {
-        console.log('El dispositivo ya existe. No se sobrescribirá.');
+        console.log('El dispositivo ya existe. Verificando si sobrescribir...');
+
+        // Mostrar alerta para confirmar sobrescritura
+        const confirmed = await this.showConfirmAlert(
+          'El dispositivo ya existe. ¿Deseas sobrescribir los datos existentes?',
+          'Sobrescribir'
+        );
+
+        if (!confirmed) {
+          console.log('Operación cancelada por el usuario.');
+          return false; // Operación cancelada
+        }
+
+        // Sobrescribir los datos del dispositivo
+        await this.firestoreService.updateData(devicesPath, deviceWrite);
+        console.log('Datos del dispositivo sobrescritos correctamente.');
+        return true; // Operación exitosa
       } else {
+        // Crear un nuevo dispositivo si no existe
         await this.firestoreService.writeData(devicesPath, deviceWrite);
         console.log('Datos del dispositivo escritos correctamente.');
+        return true; // Operación exitosa
       }
     } catch (error) {
       console.error('Error al verificar o escribir los datos del dispositivo:', error);
+      return false;
     }
   }
-  
 
-formatMacAddress(mac: string): string {
-  // Quitar el último carácter y reemplazar ':' con '_'
-  return mac.slice(0, -1).replace(/:/g, '_');
-  
-}
 
-sleep(ms: number): Promise<void> {
-  console.log("Tiempo de espera...");
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
-handleSSIDChange(event: any): void {
-  if (event.detail.value === 'manual') {
-    this.isManualInput = true; // Mostrar el input manual
-    this.wifiSSID = ''; // Limpiar el valor actual de SSID
-  } else {
-    this.isManualInput = false; // Ocultar el input manual
+  formatMacAddress(mac: string): string {
+    // Quitar el último carácter y reemplazar ':' con '_'
+    return mac.slice(0, -1).replace(/:/g, '_');
+
   }
-}
+
+  sleep(ms: number): Promise<void> {
+    console.log("Tiempo de espera...");
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  handleSSIDChange(event: any): void {
+    if (event.detail.value === 'manual') {
+      this.isManualInput = true; // Mostrar el input manual
+      this.wifiSSID = ''; // Limpiar el valor actual de SSID
+    } else {
+      this.isManualInput = false; // Ocultar el input manual
+    }
+  }
 
 
   async showAlert(msg: string, opc: string) {
@@ -711,6 +890,34 @@ handleSSIDChange(event: any): void {
     });
     await alert.present();
   }
+
+  async showConfirmAlert(message: string, confirmText: string): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Confirmación',
+        message: message,
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            handler: () => {
+              console.log('Acción cancelada por el usuario.');
+              resolve(false); // El usuario canceló
+            },
+          },
+          {
+            text: confirmText,
+            handler: () => {
+              console.log('Acción confirmada por el usuario.');
+              resolve(true); // El usuario confirmó
+            },
+          },
+        ],
+      });
+      await alert.present();
+    });
+  }
+
 
   async presentToast(msg: string) {
     const toast = await this.toastController.create({

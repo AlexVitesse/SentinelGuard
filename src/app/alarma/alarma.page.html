@@ -1,0 +1,54 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Alarm Scheduler
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="scheduler-container">
+    <h2>Schedule Alarm</h2>
+    
+    <ion-item>
+      <ion-label position="stacked">Activation Time</ion-label>
+      <ion-datetime displayFormat="HH:mm" pickerFormat="HH:mm" [(ngModel)]="activationTime"></ion-datetime>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Deactivation Time</ion-label>
+      <ion-datetime displayFormat="HH:mm" pickerFormat="HH:mm" [(ngModel)]="deactivationTime"></ion-datetime>
+    </ion-item>
+
+    <ion-list>
+      <ion-item>
+        <ion-label>Repeat on days</ion-label>
+      </ion-item>
+      <ion-item *ngFor="let day of weekDays; let i = index">
+        <ion-label>{{day}}</ion-label>
+        <ion-checkbox [(ngModel)]="selectedDays[i]"></ion-checkbox>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" (click)="scheduleAlarm()">Schedule Alarm</ion-button>
+
+    <div class="scheduled-alarms" *ngIf="scheduledAlarms.length > 0">
+      <h3>Scheduled Alarms</h3>
+      <ion-list>
+        <ion-item *ngFor="let alarm of scheduledAlarms; let i = index">
+          <ion-label>
+            <h2>Alarm {{i + 1}}</h2>
+            <p>Activation: {{alarm.activationTime}}</p>
+            <p>Deactivation: {{alarm.deactivationTime}}</p>
+            <p>Days: {{alarm.days.join(', ')}}</p>
+          </ion-label>
+          <ion-button slot="end" (click)="removeAlarm(i)" color="danger">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>
+
+

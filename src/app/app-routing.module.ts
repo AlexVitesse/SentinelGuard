@@ -22,7 +22,11 @@ const routes: Routes = [
   {
     path: 'login',
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
+  },  {
+    path: 'alarma',
+    loadChildren: () => import('./alarma/alarma.module').then( m => m.AlarmaPageModule)
   },
+
 ];
 
 

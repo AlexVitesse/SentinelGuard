@@ -47,7 +47,8 @@ export class DivicesPage implements OnInit {
     // Suscripción a cambios en tiempo real desde la colección "/Estado"
     const stateSubscription = this.firestoreService.dataChanges$.subscribe((data) => {
       console.log('Cambio detectado en /Estado:', data); // Log para depuración
-      this.actualState = data; // Actualiza el estado actual del sistema
+      this.actualState = data.Estado; // Actualiza el estado actual del sistema
+      this.isArmed = this.actualState;
       this.cdr.detectChanges(); // Notifica a Angular de cambios para actualizar la vista 
 
     });
@@ -231,51 +232,43 @@ async activateAlarm() {
         text: 'No',
         role: 'cancel',
         handler: async () => {
-          await alert.dismiss(); // Cierra la alerta
+          await alert.dismiss();
           this.canWrite = true; // Reactivar el botón si se cancela
         }
       },
       {
         text: 'Sí',
         handler: async () => {
-          await alert.dismiss(); // Cierra la alerta inmediatamente
+          await alert.dismiss();
           this.canWrite = false; // Desactivar el botón temporalmente
 
           const pathApp = 'ESP32/' + this.deviceMAC + '/DisparoApp';
-          const pathESP = 'ESP32/' + this.deviceMAC + '/DisparoESP';
 
           try {
-            // Escribir "true" en la ruta /DisparoApp
-            await this.firestoreService.writeData(pathApp, true);
-            console.log('Disparo solicitado en /DisparoApp');
+            // Leer el valor actual de DisparoApp
+            const currentData = (await this.firestoreService.readData(pathApp)) || {};
+            await this.sleep(500); // Espera de 500 ms
 
-            // Esperar 6 segundos antes de verificar la respuesta
-            await this.sleep(8000);
+            // Obtener la fecha y hora actual
+            let timestamp = new Date().toISOString();
+            timestamp = timestamp.replace(/[:.]/g, '_').replace('T', '_').replace('Z', '');
 
-            // Leer el estado desde /DisparoESP
-            const currentState = await this.firestoreService.readData(pathESP);
-            console.log('Estado de /DisparoESP:', currentState);
+            // Agregar la nueva entrada con valor `true`
+            currentData[timestamp] = true;
 
-            if (currentState === true) {
-              // Confirmación exitosa
-              this.presentToastP('BENGALAS DISPARADAS', 'danger');
+            // Escribir el diccionario actualizado en Firestore
+            await this.firestoreService.writeData(pathApp, currentData);
+            console.log('Disparo solicitado en /DisparoApp con datos:', currentData);
+            await this.sleep(500); // Espera de 500 ms
 
-              // Cambiar el estado de la alarma a activa
-              this.alarmActive = true;
+            // Cambiar el estado de la alarma a activa
+            this.alarmActive = true;
 
-              // Resetear DisparoApp y DisparoESP a false
-              await this.firestoreService.writeData(pathApp, false);
-              await this.firestoreService.writeData(pathESP, false);
-            } else {
-              // No se obtuvo respuesta esperada
-              this.presentToastP('No obtuvimos respuesta de la alarma. Verifica la conexión.', 'warning');
-
-              // Resetear solo DisparoApp a false
-              await this.firestoreService.writeData(pathApp, false);
-            }
+            // Mostrar notificación de éxito
+            this.presentToastP('Alarma activada.', 'success');
           } catch (error) {
             console.error('Error al activar la alarma:', error);
-            this.presentToastP('Ocurrió un error. Inténtalo de nuevo.', 'danger');
+            this.presentToastP('Ocurrió un error al activar la alarma. Inténtalo de nuevo.', 'danger');
           } finally {
             this.canWrite = true; // Reactivar el botón
           }
@@ -288,21 +281,35 @@ async activateAlarm() {
 }
 
 async deactivateAlarm() {
-  try {
-    const pathAnswer = 'ESP32/' + this.deviceMAC + '/Answer';
+  const pathApp = 'ESP32/' + this.deviceMAC + '/DisparoApp';
 
-    // Escribir "false" en el path para desactivar la alarma
-    await this.firestoreService.writeData(pathAnswer, false);
-    console.log('Alarma desactivada.');
+  try {
+    // Leer el valor actual de DisparoApp
+    const currentData = (await this.firestoreService.readData(pathApp)) || {};
+    await this.sleep(500); // Espera de 500 ms
+
+    // Obtener la fecha y hora actual
+    let timestamp = new Date().toISOString();
+    timestamp = timestamp.replace(/[:.]/g, '_').replace('T', '_').replace('Z', '');
+
+    // Agregar la nueva entrada con valor `false`
+    currentData[timestamp] = false;
+
+    // Escribir el diccionario actualizado en Firestore
+    await this.firestoreService.writeData(pathApp, currentData);
+    console.log('Desactivación solicitada en /DisparoApp con datos:', currentData);
+    await this.sleep(500); // Espera de 500 ms
 
     // Cambiar el estado de la alarma a inactiva
     this.alarmActive = false;
 
-    // Mostrar mensaje de confirmación
-    this.presentToastP('La alarma ha sido desactivada.', 'success');
+    // Mostrar notificación de éxito
+    this.presentToastP('Alarma desactivada.', 'success');
   } catch (error) {
     console.error('Error al desactivar la alarma:', error);
     this.presentToastP('Ocurrió un error al desactivar la alarma. Inténtalo de nuevo.', 'danger');
+  } finally {
+    this.canWrite = true; // Reactivar el botón
   }
 }
 

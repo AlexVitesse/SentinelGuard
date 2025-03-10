@@ -813,17 +813,6 @@ export class HomePage {
       if (existingDeviceData) {
         console.log('El dispositivo ya existe. Verificando si sobrescribir...');
 
-        // Mostrar alerta para confirmar sobrescritura
-        const confirmed = await this.showConfirmAlert(
-          'El dispositivo ya existe. ¿Deseas sobrescribir los datos existentes?',
-          'Sobrescribir'
-        );
-
-        if (!confirmed) {
-          console.log('Operación cancelada por el usuario.');
-          return false; // Operación cancelada
-        }
-
         // Sobrescribir los datos del dispositivo
         await this.firestoreService.updateData(devicesPath, deviceWrite);
         console.log('Datos del dispositivo sobrescritos correctamente.');

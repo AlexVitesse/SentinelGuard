@@ -1,0 +1,99 @@
+.scheduler-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  
+    h2 {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--ion-color-primary);
+      margin-bottom: 20px;
+    }
+  
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      margin-bottom: 15px;
+    }
+  
+    ion-datetime {
+      padding-left: 0;
+    }
+  
+    ion-list {
+      background: transparent;
+    }
+  
+    ion-checkbox {
+      --size: 24px;
+      --checkbox-background-checked: var(--ion-color-primary);
+    }
+  
+    ion-button {
+      margin-top: 20px;
+      --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
+    }
+  }
+  
+  .scheduled-alarms {
+    margin-top: 30px;
+  
+    h3 {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--ion-color-dark);
+      margin-bottom: 15px;
+    }
+  
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      --background: var(--ion-color-light);
+  
+      h2 {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--ion-color-dark);
+      }
+  
+      p {
+        font-size: 14px;
+        color: var(--ion-color-medium);
+      }
+  
+      ion-button {
+        margin-top: 0;
+      }
+    }
+  }
+  
+  // Responsive design adjustments
+  @media (max-width: 480px) {
+    .scheduler-container {
+      padding: 15px;
+  
+      h2 {
+        font-size: 20px;
+      }
+    }
+  
+    .scheduled-alarms {
+      h3 {
+        font-size: 18px;
+      }
+  
+      ion-item {
+        h2 {
+          font-size: 16px;
+        }
+  
+        p {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+  
+  
